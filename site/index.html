@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title></title>
+<meta name="description" content="">
+</head>
+<body>
+<div id="EditProd">
+</div>
+<div id="Tienda">
+	<table border=3>
+		<thead>
+			<tr>
+				<th>Producto</th>
+				<th>Stock</th>
+				<th>Cantidad</th>
+				<th>Accion</th>
+			</tr>
+		</thead>
+		<tbody id="cesta">
+		</tbody>
+	</table>
+	<label id="avisos">Hola!!!!!!!!!!!!!!!!!!!!</label>
+	<a href="#/new"><button id="btnNuevo">Nuevo</button></a>
+	<select class="opFiltro">
+				<option value="t">Todos</option>
+				<option value="e">En Stock</option>
+				<option value="b">Bajo Stock</option>
+				<option value="s">Sin Existencias</option>
+			</select>
+</div>
+
+<script type="text/template" id="temp_Producto">
+		<td> <%=nombre%></td>
+		<td> <%=cantidad%></td>
+		<td> <input id="txtCantidad" type="text" class="numerico"></td>
+		<td> <select class="opAccion">
+				<option value="s">(Selecciona)</option>
+				<option value="c">Comprar</option>
+				<option value="v">Vender</option>
+				<option value="e">Editar</option>
+				<option value="b">Borrar</option>
+			</select>
+		</td>
+</script>
+
+<script type="text/template" id="temp_Edit_Prod">
+<label for="txtNombre">Nombre:</label>
+<input type="text" id="txtNombre" value="<%=nombre%>"/><br/>
+<label for="txtStock">Stock:</label>
+<input type="text" id="txtStock" value="<%=cantidad%>"/><br/>
+<label for="txtStockMin">Stock Minimo:</label>
+<input type="text" id="txtStockMin" value="<%=stockMin%>"/><br/>
+
+<button id="btnGuardar" type="button">Guardar</button>
+
+</script>
+
+<script src="js/jquery.js"></script>
+<script src="js/underscore.js"></script>
+<script src="js/backbone.js"></script>
+<script src="js/backbone.localStorage-min.js"></script>
+<script>
+//configurar validation:true por defecto en backbone
+var set = Backbone.Model.prototype.set;
+Backbone.Model.prototype.set = function(key, val, options) {
+  return set.call(this, key, val, _.extend({validate: true}, options));
+}
+//objeto aplicacion, donde vamos a insertar todos los objetos de la aplicacion
+var app=app||{};
+//creación de producto
+app.Producto=Backbone.Model.extend({
+	url:'/producto',
+	idAttribute:'_id',
+	defaults:{
+		nombre:'Sin nombre',
+		cantidad:1,
+		stockMin:100},
+	initialize:function(attr){
+		this.on('change:cantidad',function(model,cantidad){
+			console.log(model.getNombre()+" :"+cantidad);
+		});	
+		this.on('invalid',function(model,error){
+			//if (error){
+				console.log(error);
+			//}
+		
+		});
+		if(attr.nombre===undefined){
+			console.log("falta Nombre");
+
+		}
+		},
+
+	validate: function(attribs){
+		//comprobar nota
+		if((attribs.cantidad<0)){
+			return('La cantidad no puede ser negativa');	
+		}
+		//comprobar que existe el nombre
+		if(attribs.nombre===undefined){
+			return('El nombre es obligatorio');		
+		}
+
+	},
+	getNombre:function(){
+		return this.get('nombre');
+	},
+	setNombre:function(nom){
+		this.set('nombre',nom,{validate:true});
+	},
+	getCantidad:function(){
+		return this.get('cantidad');
+	},
+	setCantidad:function(cant){
+		this.set('cantidad',cant,{validate:true});
+	},
+	getStockMin:function(){
+		return this.get('stockMin');
+	},
+	setStockMin:function(cant){
+		this.set('stockMin',cant,{validate:true});
+	},
+	comprar:function(cant){
+		if (cant<1){
+			return('La cantida debe ser positiva');
+		}else{
+			//la cantidad es mayor que 0 y la añadimos al stock
+			this.set('cantidad',this.getCantidad()+cant);
+		}
+	},
+
+	vender:function(cant){
+		//comprobar que existe la cantidad solicitada en stock
+		if (cant>this.getCantidad()){
+			return('La cantidad máxima es '+this.getCantidad());
+		}
+		if (cant<1){
+			return('La cantida debe ser positiva');
+		}else{
+			//la cantidad es mayor que 0 y la añadimos al stock
+			this.set('cantidad',this.getCantidad()-cant);
+		}
+	}
+});
+
+// ********************* al loro moro con la declaración de la coleccion************************************************
+var CProductos=Backbone.Collection.extend({
+	model:app.Producto,
+	url:'/productos',
+	//localStorage: new Backbone.LocalStorage("productos"),
+    initialize:function(){
+    	//lee los datos de localStorage
+    	//this.fetch();
+    	this.on('add',function(model){model.save()})
+    	this.on('change',function(model){model.save()})
+    	this.on('remove',function(model){model.destroy()})
+    	
+    },
+    
+    anade:function(nom,cant,stockM){
+    	//obtener el siguiente id
+    	/*if (this.models.length>0){
+    	var nextId=_.max(this.models,function(model){return model.get("id")}).get("id")+1;
+    	}else{
+    	var nextId=1;
+    	}*/
+
+    	//añadimos al modelo el nuevo producto
+    	//this.add(new app.Producto({id:nextId,nombre:nom,cantidad:cant,stockMin:stockM}));
+    	this.add(new app.Producto({nombre:nom,cantidad:cant,stockMin:stockM}));
+    }
+
+});
+//****************** y su inclución como objeto dentro de la app ************************
+app.Productos=new CProductos();
+
+//*************************************************** DEFINICIÓN DE VISTAS *************************************
+
+// Vista Producto
+app.ProductoView=Backbone.View.extend({
+	tagName: 'tr',
+	template:_.template($('#temp_Producto').html()),
+
+	initialize:function(){
+		this.listenTo(this.model,'change',this.render);
+	},
+	
+	render:function(){
+		//pasar a la plantalla los datos del modelo
+		this.$el.html(this.template(this.model.toJSON()));
+		//comprobar si el stock es menor que stockMin
+		if (this.model.getCantidad()<this.model.getStockMin()){
+			//fondo en rojo
+			this.$('td').eq(1).css({background:'red'});
+		}else{
+			this.$('td').eq(1).css({background:'white'});
+		}
+		//para poder encadenar renderizaciones
+		return this;
+	},
+	events:{
+		'change .opAccion':'accion',
+		'blur .numerico':'comprobarNum'
+	},
+	accion:function(e){
+
+
+		switch(this.$('.opAccion').val()){
+			case 'c':
+				//comprar
+				this.model.comprar(parseInt(this.$('.numerico').val()))
+				break;
+			case 'v':
+				//vender
+				var err=this.model.vender(parseInt(this.$('.numerico').val()));
+				if(err!=""){
+					$('#avisos').text(err);
+					this.$('.numerico').focus();
+				}
+				break;
+			case 'b':
+				//elimino el modelo
+				this.model.destroy();
+				break;
+			case 'e':
+			//editar el modelo
+			app.Router.navigate('#/edit/'+this.model.get('_id'), {trigger: true});
+		}
+
+	},
+	comprobarNum:function(e){
+		if (this.$('.numerico').val()!=""){
+		if(!(this.$('.numerico').val()>0)){
+			alert("Debe ser positivo");
+			
+		}
+		}
+	}
+});
+
+var MiCestaView=Backbone.View.extend({
+	el:$('#cesta'),
+	btnNuevo:$('#btnNuevo'),
+	initialize:function(){
+		//listeners para cuando se añade uno o se elimina;
+		this.listenTo(app.Productos,'add',this.addOne);
+		this.listenTo(app.Productos,'reset',this.addAll);
+		this.listenTo(app.Productos,'remove',this.addAll);
+
+		//leer los datos de la db
+
+		app.Productos.fetch();
+
+	},
+	render:function(){
+		//por ahora no vamos a hacer nada, ya que todo se renderiza en ProductoView
+	},
+	productoNuevo:function(){
+		//redireccionar a
+	window.location.href='#/new'
+	},
+	addOne:function(m){
+		var v=new app.ProductoView({model:m});
+		//$(this.el).append(v.render().el);
+		$('#cesta').append(v.render().el)
+
+	},
+	addAll:function(){
+		$(this.el).html('');
+		app.Productos.each(this.addOne,this);
+	}
+});
+
+
+var MiEditProdView=Backbone.View.extend({
+el:$('#EditProd'),
+template:_.template($('#temp_Edit_Prod').html()),
+initialize:function(){
+	//this.listenTo(this.model,'change',this.render);	
+},
+render:function(){
+if(!(this.model===undefined)){
+	this.$el.html(this.template(this.model.model.toJSON()));
+}else{
+	this.$el.html(this.template({nombre:"",cantidad:1,stockMin:1}));
+}
+},
+events:{
+		'click #btnGuardar':'guardarProd'
+	},
+guardarProd:function(){
+	if (this.model===undefined){
+	//nuevo
+	app.Productos.anade(this.$('#txtNombre').val(),this.$('#txtStock').val(),this.$('#txtStockMin').val())
+}else{
+	//editar
+	this.model.model.setNombre(this.$('#txtNombre').val());
+	//actualizar la cantidad
+	this.model.model.setCantidad(this.$('#txtStock').val());
+	this.model.model.setStockMin(this.$('#txtStockMin').val());
+	this.model.model.save();
+	
+}//else
+app.Router.navigate('', {trigger: true});
+
+},
+setModel:function(modelo){
+	this.model=modelo;
+	this.render();
+}
+});
+
+//******************* ROUTER ********************
+
+var MiRouter = Backbone.Router.extend({
+routes: {
+"" : "todos",
+"new" : "editProd",
+"edit/:id" : "editProd"},
+todos:function(){
+	console.log("Mostrar todos");
+	//recargar la vista de todos los productos
+	$('#Tienda').show();
+	$('#EditProd').hide();
+},
+editProd:function(id){
+	if (!id){
+		//new
+		app.EditProdView.setModel();
+		$('#EditProd').show();		
+		//ocultar el listado de prods
+		$('#Tienda').hide();
+		console.log("Nuevo Producto");
+
+	}else{
+		//editar
+		app.EditProdView.setModel({'model':app.Productos.get(id)});
+		$('#EditProd').show();		
+		//ocultar el listado de prods
+		$('#Tienda').hide();
+
+		console.log("Editando Producto "+id);
+	}
+}
+});
+
+Backbone.history.start();
+
+
+//ejecutar nuestra app
+$(function(){
+	app.Router=new MiRouter();
+	app.CestaView=new MiCestaView();	
+	app.EditProdView=new MiEditProdView();
+
+});
+</script>
+</body>
+</html>

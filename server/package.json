@@ -1,0 +1,9 @@
+{
+  "name" : "node-api-rest-example",
+  "version" : "0.0.1",
+  "dependencies" : {
+    "express" : "3.2.6",
+    "mongoose" : "3.6.11",
+    "restify": "~2.6.0"
+  }
+}
