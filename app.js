@@ -1,5 +1,6 @@
 //ejecutar en consola 
 //heroku config:set MONGOHQ_URL="mongodb://zubiri:zubiri@troup.mongohq.com:10013/prueba"
+//modificar: server.listen(process.env.PORT
 
 var express  = require("express"),
     app      = express(),
