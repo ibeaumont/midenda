@@ -34,6 +34,6 @@ mongoose.connect('mongodb://zubiri:zubiri@troup.mongohq.com:10013/prueba', funct
 	}
 });
 
-server.listen(3000, function() {
+server.listen(80, function() {
   console.log("Node server running on http://localhost:3000");
 });
