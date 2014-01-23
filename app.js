@@ -1,3 +1,6 @@
+//ejecutar en consola 
+//heroku config:set MONGOHQ_URL="mongodb://zubiri:zubiri@troup.mongohq.com:10013/prueba"
+
 var express  = require("express"),
     app      = express(),
     http     = require("http"),
@@ -34,6 +37,6 @@ mongoose.connect('mongodb://zubiri:zubiri@troup.mongohq.com:10013/prueba', funct
 	}
 });
 
-server.listen(80, function() {
+server.listen(process.env.PORT, function() {
   console.log("Node server running on http://localhost:3000");
 });
