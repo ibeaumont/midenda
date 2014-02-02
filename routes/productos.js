@@ -53,9 +53,9 @@ module.exports = function(app) {
   //PUT - Update a register already exists
   updateProducto = function(req, res) {
   	Producto.findById(req.params.id, function(err, producto) {
-     var nombre=    req.body.nombre,
-      cantidad=     req.body.cantidad,
-      stockMin=  req.body.stockMin;
+     producto.set(nombre,req.body.nombre);
+      producto.set(cantidad,req.body.cantidad);
+      producto.set(stockMin,req.body.stockMin);
   		producto.save(function(err) {
   			if(!err) {
   				console.log('Updated');
