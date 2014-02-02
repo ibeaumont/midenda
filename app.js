@@ -27,14 +27,15 @@ var allowCrossDomain = function(req, res, next) {
 //fin prueba cors
    
 app.configure(function () {
-  app.use(express.bodyParser());
-  app.use(express.methodOverride());
-  app.use(app.router);
   //prueba cors
   app.use(allowCrossDomain);
   app.use(express.static(path.join(application_root, "public")));
   app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
   //fin prueba cors
+  app.use(express.bodyParser());
+  app.use(express.methodOverride());
+  app.use(app.router);
+
 });
 
 //app.get('/', function(req, res) {
