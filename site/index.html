@@ -78,8 +78,8 @@ app.Producto=Backbone.Model.extend({
 		cantidad:1,
 		stockMin:100},
 	initialize:function(attr){
-		this.on('change:cantidad',function(model,cantidad){
-			console.log(model.getNombre()+" :"+cantidad);
+		this.on('change',function(model){
+			model.save();
 		});	
 		this.on('invalid',function(model,error){
 			//if (error){
@@ -300,7 +300,7 @@ guardarProd:function(){
 	//actualizar la cantidad
 	this.model.model.setCantidad(this.$('#txtStock').val());
 	this.model.model.setStockMin(this.$('#txtStockMin').val());
-	this.model.model.save();
+	//this.model.model.save();
 	
 }//else
 app.Router.navigate('', {trigger: true});
