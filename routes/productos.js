@@ -75,6 +75,7 @@ module.exports = function(app) {
   				console.log('Removed');
   			} else {
   				console.log('ERROR: ' + err);
+          console.log(producto);
   			}
   		})
   	});
