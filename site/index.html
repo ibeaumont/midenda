@@ -71,7 +71,7 @@ Backbone.Model.prototype.set = function(key, val, options) {
 var app=app||{};
 //creación de producto
 app.Producto=Backbone.Model.extend({
-	url:'/producto',
+	urlRoot:'/producto',
 	idAttribute:'_id',
 	defaults:{
 		nombre:'Sin nombre',
