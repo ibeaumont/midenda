@@ -52,7 +52,7 @@ module.exports = function(app) {
 
   //PUT - Update a register already exists
   updateProducto = function(req, res) {
-  	Producto.findById(req.body._id, function(err, producto) {
+  	Producto.findById(req.params.id, function(err, producto) {
      producto.set('nombre',req.body.nombre);
      producto.set('cantidad',req.body.cantidad);
      producto.set('stockMin',req.body.stockMin);
@@ -69,13 +69,12 @@ module.exports = function(app) {
 
   //DELETE - Delete a prod with specified ID
   deleteProducto = function(req, res) {
-  	Producto.findById(req.body._id, function(err, producto) {
+  	Producto.findById(req.params.id, function(err, producto) {
   		producto.remove(function(err) {
   			if(!err) {
   				console.log('Removed');
   			} else {
   				console.log('ERROR: ' + err);
-          console.log(producto);
   			}
   		})
   	});
@@ -85,7 +84,7 @@ module.exports = function(app) {
   app.get('/productos', findAllProductos);
   app.get('/producto/:id', findById);
   app.post('/producto', addProducto);
-  app.put('/producto', updateProducto);
+  app.put('/producto/:id', updateProducto);
   app.delete('/producto', deleteProducto);
 
 }
