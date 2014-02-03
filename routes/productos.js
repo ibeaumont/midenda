@@ -69,7 +69,7 @@ module.exports = function(app) {
 
   //DELETE - Delete a prod with specified ID
   deleteProducto = function(req, res) {
-  	Producto.findById(req.params.id, function(err, producto) {
+  	Producto.findById(req.bodi._id, function(err, producto) {
   		producto.remove(function(err) {
   			if(!err) {
   				console.log('Removed');
@@ -85,6 +85,6 @@ module.exports = function(app) {
   app.get('/producto/:id', findById);
   app.post('/producto', addProducto);
   app.put('/producto', updateProducto);
-  app.delete('/producto/:id', deleteProducto);
+  app.delete('/producto', deleteProducto);
 
 }
