@@ -52,11 +52,11 @@ module.exports = function(app) {
 
   //PUT - Update a register already exists
   updateProducto = function(req, res) {
-  	Producto.findById(req.params.id, function(err, producto) {
+  	Producto.findById(req.body._id, function(err, producto) {
      producto.set('nombre',req.body.nombre);
-      producto.set('cantidad',req.body.cantidad);
-      producto.set('stockMin',req.body.stockMin);
-  		producto.save(function(err) {
+     producto.set('cantidad',req.body.cantidad);
+     producto.set('stockMin',req.body.stockMin);
+  	 producto.save(function(err) {
   			if(!err) {
   				console.log('Updated');
   			} else {
@@ -84,7 +84,7 @@ module.exports = function(app) {
   app.get('/productos', findAllProductos);
   app.get('/producto/:id', findById);
   app.post('/producto', addProducto);
-  app.put('/producto/:id', updateProducto);
+  app.put('/producto', updateProducto);
   app.delete('/producto/:id', deleteProducto);
 
 }
