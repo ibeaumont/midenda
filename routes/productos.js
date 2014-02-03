@@ -85,6 +85,6 @@ module.exports = function(app) {
   app.get('/producto/:id', findById);
   app.post('/producto', addProducto);
   app.put('/producto/:id', updateProducto);
-  app.delete('/producto', deleteProducto);
+  app.delete('/producto/:id', deleteProducto);
 
 }
